@@ -1,0 +1,12 @@
+# Ignore runtime-generated files
+backend/uploads/
+backend/converted/
+
+# Python junk
+__pycache__/
+*.pyc
+.env
+
+# VSCode/IDE
+.vscode/
+.idea/
