@@ -12,3 +12,10 @@ __pycache__/
 .idea/
 
 venv/
+
+setup.txt
+
+#ignore infrastructure folder
+infrastructure/
+# Ignore all files in the infrastructure folder
+
