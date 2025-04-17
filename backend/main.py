@@ -7,6 +7,10 @@ import time
 import threading
 import magic
 import uuid
+import psycopg2
+from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv()
 
 # Import converters
 from converters.docx_to_pdf import convert_docx_to_pdf
@@ -94,6 +98,7 @@ async def smart_convert(file: UploadFile = File(...), output_format: str = Form(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
 
+    log_to_db(file.filename, input_ext, output_format)
     return {"download_url": f"/download/{os.path.basename(output_path)}"}
 
 # File download
@@ -116,6 +121,26 @@ def start_cleanup_thread():
     for folder in [UPLOAD_DIR, CONVERTED_DIR]:
         thread = threading.Thread(target=cleanup_files, args=(folder,), daemon=True)
         thread.start()
+
+def log_to_db(file_name, file_type, converted_to):
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("RDS_HOST"),
+            database=os.getenv("RDS_DB"),
+            user=os.getenv("RDS_USER"),
+            password=os.getenv("RDS_PASS")
+        )
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO conversions_log (file_name, file_type, converted_to) VALUES (%s, %s, %s);",
+            (file_name, file_type, converted_to)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"[DB ERROR] Failed to log to DB: {e}")
+
 
 # Ensure folders exist before starting cleanup
 os.makedirs(UPLOAD_DIR, exist_ok=True)
