@@ -4,5 +4,6 @@ python-magic
 pillow
 python-docx
 pdfplumber
+python-multipart
 
 #System Packages = ffmpeg libreoffice libmagic1
